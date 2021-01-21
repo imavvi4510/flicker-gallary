@@ -7,7 +7,6 @@ import {
   FlatList,
   TouchableHighlight,
   TextInput,
-  ToastAndroid,
 } from 'react-native';
 import {
   executeFetchRequest,
@@ -33,11 +32,12 @@ class SearchScreen extends Component {
   }
 
   // Event handlers
-  _onPressSearch() {
+  async _onPressSearch() {
     console.log('ghhh');
     const url = urlForSearchtext(this.state.searchText);
     this.setState({isLoading: true});
-    executeFetchRequest(url, (photos) => {
+    try {
+      const photos = await executeFetchRequest(url);
       this.setState({isLoading: false});
       const pushAction = StackActions.push('Result', {
         title: this.state.searchText + ' Photos',
@@ -45,7 +45,19 @@ class SearchScreen extends Component {
       });
 
       this.props.navigation.dispatch(pushAction);
-    });
+    } catch (error) {
+      Snackbar.show({
+        text: "it's seems you are offline'",
+        duration: Snackbar.LENGTH_INDEFINITE,
+        action: {
+          text: 'RETRY',
+          textColor: 'green',
+          onPress: () => {
+            this._onPressSearch();
+          },
+        },
+      });
+    }
   }
 
   _populatePhotos(photos, page) {
@@ -65,7 +77,7 @@ class SearchScreen extends Component {
     } catch (error) {
       // ToastAndroid.show("Couldn't refresh the feed", ToastAndroid.LONG);
       Snackbar.show({
-        text: "it's seems you are offline'",
+        text: "it's seems you are offline!",
         duration: Snackbar.LENGTH_INDEFINITE,
         action: {
           text: 'RETRY',
