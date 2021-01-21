@@ -7,15 +7,17 @@ import {
   FlatList,
   TouchableHighlight,
   TextInput,
+  ToastAndroid,
 } from 'react-native';
 import {
   executeFetchRequest,
   urlForSearchtext,
   urlForInteresting,
 } from './DataManager';
-import {saveData} from './Storage';
+import {saveData, readData} from './Storage';
 import React, {Component} from 'react';
 import {StackActions} from '@react-navigation/native';
+import Snackbar from 'react-native-snackbar';
 const ResultsScreen = require('./ResultsScreen');
 
 class SearchScreen extends Component {
@@ -46,20 +48,41 @@ class SearchScreen extends Component {
     });
   }
 
-  fetchPages(page, readFromDB = false) {
+  _populatePhotos(photos, page) {
+    this.setState(({photos: prevPhotos}) => ({
+      isLoading: false,
+      photos: [...prevPhotos, ...photos],
+      page,
+    }));
+  }
+
+  async fetchPages(page, readFromDB = false) {
     const url = urlForInteresting(page);
     this.setState({isLoading: true});
-    executeFetchRequest(
-      url,
-      (photos) => {
-        this.setState(({photos: prevPhotos}) => ({
-          isLoading: false,
-          photos: [...prevPhotos, ...photos],
-          page,
-        }));
-      },
-      readFromDB,
-    );
+    try {
+      const photos = await executeFetchRequest(url);
+      this._populatePhotos(photos, page);
+    } catch (error) {
+      // ToastAndroid.show("Couldn't refresh the feed", ToastAndroid.LONG);
+      Snackbar.show({
+        text: "it's seems you are offline'",
+        duration: Snackbar.LENGTH_INDEFINITE,
+        action: {
+          text: 'RETRY',
+          textColor: 'green',
+          onPress: () => {
+            this.fetchPages(page, readFromDB);
+          },
+        },
+      });
+      if (readFromDB) {
+        readData().then((photos) => {
+          if (photos) {
+            this._populatePhotos(photos, 1);
+          }
+        });
+      }
+    }
   }
 
   // _onPressRow(selectedPhoto) {

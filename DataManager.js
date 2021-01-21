@@ -10,26 +10,23 @@ const flickrMethod = {
 };
 
 // Public
-export function executeFetchRequest(url, completion, readFromDB = false) {
-  fetch(url)
-    .then((response) => response.json())
-    .then((json) => _handleResponse(json))
-    .then((photos) => completion(photos))
-    .catch((error) => {
-      ToastAndroid.show("Couldn't refresh the feed", ToastAndroid.LONG);
-      if (readFromDB) {
-        readData().then((photos) => {
-          if (photos) completion(JSON.parse(photos));
-        });
-      }
-    });
+export async function executeFetchRequest(url) {
+  console.log('the url calling>>>>>>>>>>>>>>>>>>>', url);
+  try {
+    const response = await fetch(url);
+    const json_response = await response.json();
+    const photos = await _handleResponse(json_response);
+    return photos;
+  } catch (error) {
+    throw new Error(error);
+  }
 }
 export function urlForSearchtext(searchText) {
   const extraParams = {text: searchText};
   return _constructFlickrURL(flickrMethod.search, extraParams);
 }
 export function urlForInteresting(page = 1) {
-  return _constructFlickrURL(flickrMethod.interesting);
+  return _constructFlickrURL(flickrMethod.interesting, {page});
 }
 
 // Private
