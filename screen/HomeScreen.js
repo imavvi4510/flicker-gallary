@@ -12,12 +12,12 @@ import {
   executeFetchRequest,
   urlForSearchtext,
   urlForInteresting,
-} from './DataManager';
-import {saveData, readData} from './Storage';
+} from '../DataManager';
+import {saveData, readData} from '../Storage';
 import React, {Component} from 'react';
 import {StackActions} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
-const ResultsScreen = require('./ResultsScreen');
+const ResultsScreen = require('../screen/ResultsScreen');
 
 class SearchScreen extends Component {
   constructor(props) {
@@ -33,7 +33,6 @@ class SearchScreen extends Component {
 
   // Event handlers
   async _onPressSearch() {
-    console.log('ghhh');
     const url = urlForSearchtext(this.state.searchText);
     this.setState({isLoading: true});
     try {
@@ -75,7 +74,6 @@ class SearchScreen extends Component {
       const photos = await executeFetchRequest(url);
       this._populatePhotos(photos, page);
     } catch (error) {
-      // ToastAndroid.show("Couldn't refresh the feed", ToastAndroid.LONG);
       Snackbar.show({
         text: "it's seems you are offline!",
         duration: Snackbar.LENGTH_INDEFINITE,
@@ -97,17 +95,6 @@ class SearchScreen extends Component {
     }
   }
 
-  // _onPressRow(selectedPhoto) {
-  //   const photo = this.state.photos.filter(
-  //     (photo) => photo === selectedPhoto,
-  //   )[0];
-  //   this.props.navigator.push({
-  //     title: photo.title,
-  //     component: DetailScreen,
-  //     passProps: {photo: photo},
-  //   });
-  // }
-
   // Lifecycle
   async componentDidMount() {
     this.fetchPages(this.state.page, true);
@@ -118,10 +105,7 @@ class SearchScreen extends Component {
 
   _renderRow({item}) {
     return (
-      <TouchableHighlight
-        underlayColor="transparent"
-        // onPress={() => this._onPressRow(item)}
-      >
+      <TouchableHighlight underlayColor="transparent">
         <View style={styles.rowContainer}>
           <Image style={styles.rowImage} source={{uri: item.url_m}}></Image>
         </View>
@@ -182,12 +166,11 @@ class SearchScreen extends Component {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    // alignItems: 'center',
   },
   topContainer: {
     margin: 1,
     borderRadius: 10,
-    // flex: 2,
+
     alignSelf: 'stretch',
     justifyContent: 'center',
     marginBottom: 2,
@@ -231,11 +214,9 @@ const styles = StyleSheet.create({
   bottomContainer: {
     flex: 1,
     paddingRight: 10,
-    // backgroundColor: 'red',
   },
   listContainer: {
     flex: 3,
-    // backgroundColor: 'green',
   },
   imagesTitle: {
     fontSize: 20,
@@ -246,7 +227,6 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   rowContainer: {
-    // flex: 3,
     backgroundColor: 'transparent',
     paddingLeft: 10,
     paddingTop: 10,
@@ -254,7 +234,7 @@ const styles = StyleSheet.create({
   },
   rowImage: {
     backgroundColor: 'rgba(0,0,0,.3)',
-    // flex: 1,
+
     height: 300,
     width: 400,
     borderRadius: 10,

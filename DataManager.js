@@ -1,3 +1,4 @@
+// this is data manger contains constants , public function , private function
 import {readData} from './Storage';
 import {ToastAndroid} from 'react-native';
 
@@ -11,7 +12,6 @@ const flickrMethod = {
 
 // Public
 export async function executeFetchRequest(url) {
-  console.log('the url calling>>>>>>>>>>>>>>>>>>>', url);
   try {
     const response = await fetch(url);
     const json_response = await response.json();

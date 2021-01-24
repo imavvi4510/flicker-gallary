@@ -8,7 +8,7 @@ import {
   FlatList,
   Text,
 } from 'react-native';
-const DetailScreen = require('./DetailScreen');
+
 
 class ResultsScreen extends Component {
   constructor(props) {
