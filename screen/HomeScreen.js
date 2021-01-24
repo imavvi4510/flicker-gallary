@@ -8,16 +8,12 @@ import {
   TouchableHighlight,
   TextInput,
 } from 'react-native';
-import {
-  executeFetchRequest,
-  urlForSearchtext,
-  urlForInteresting,
-} from '../DataManager';
+import DataManager from '../DataManager';
 import {saveData, readData} from '../Storage';
 import React, {Component} from 'react';
 import {StackActions} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
-const ResultsScreen = require('../screen/ResultsScreen');
+import appConstant from '../app-constant';
 
 class SearchScreen extends Component {
   constructor(props) {
@@ -33,10 +29,10 @@ class SearchScreen extends Component {
 
   // Event handlers
   async _onPressSearch() {
-    const url = urlForSearchtext(this.state.searchText);
+    const url = DataManager.urlForSearchtext(this.state.searchText);
     this.setState({isLoading: true});
     try {
-      const photos = await executeFetchRequest(url);
+      const photos = await DataManager.executeFetchRequest(url);
       this.setState({isLoading: false});
       const pushAction = StackActions.push('Result', {
         title: this.state.searchText + ' Photos',
@@ -45,20 +41,25 @@ class SearchScreen extends Component {
 
       this.props.navigation.dispatch(pushAction);
     } catch (error) {
-      Snackbar.show({
-        text: "it's seems you are offline'",
-        duration: Snackbar.LENGTH_INDEFINITE,
-        action: {
-          text: 'RETRY',
-          textColor: 'green',
-          onPress: () => {
-            this._onPressSearch();
-          },
-        },
-      });
+      this._handleError(appConstant.error_msg, () => this._onPressSearch());
     }
   }
 
+  _handleError(msg, onRetry = () => {}) {
+    Snackbar.show({
+      text: msg,
+      duration: Snackbar.LENGTH_INDEFINITE,
+      action: {
+        text: 'RETRY',
+        textColor: 'green',
+        onPress: () => {
+          onRetry();
+        },
+      },
+    });
+  }
+
+  // set page and sate
   _populatePhotos(photos, page) {
     this.setState(({photos: prevPhotos}) => ({
       isLoading: false,
@@ -66,29 +67,25 @@ class SearchScreen extends Component {
       page,
     }));
   }
-
+  //  fetch page
   async fetchPages(page, readFromDB = false) {
-    const url = urlForInteresting(page);
+    const url = DataManager.urlForInteresting(page);
     this.setState({isLoading: true});
     try {
-      const photos = await executeFetchRequest(url);
+      const photos = await DataManager.executeFetchRequest(url);
       this._populatePhotos(photos, page);
+      if (page === 1) {
+        saveData(appConstant.storage_keys.photos, {photos}).then(() => {});
+      }
     } catch (error) {
-      Snackbar.show({
-        text: "it's seems you are offline!",
-        duration: Snackbar.LENGTH_INDEFINITE,
-        action: {
-          text: 'RETRY',
-          textColor: 'green',
-          onPress: () => {
-            this.fetchPages(page, readFromDB);
-          },
-        },
-      });
+      this._handleError(appConstant.error_msg, () =>
+        this.fetchPages(page, readFromDB),
+      );
+
       if (readFromDB) {
-        readData().then((photos) => {
+        readData(appConstant.storage_keys.photos).then((photos) => {
           if (photos) {
-            this._populatePhotos(photos, 1);
+            this._populatePhotos(photos.photos, 1);
           }
         });
       }
@@ -99,9 +96,8 @@ class SearchScreen extends Component {
   async componentDidMount() {
     this.fetchPages(this.state.page, true);
   }
-  componentWillUnmount() {
-    saveData(this.state.photos.slice(0, 10)).then(() => {});
-  }
+
+  componentWillUnmount() {}
 
   _renderRow({item}) {
     return (
@@ -112,6 +108,7 @@ class SearchScreen extends Component {
       </TouchableHighlight>
     );
   }
+  //  handle infinite page
   handleEnd() {
     this.fetchPages(this.state.page + 1);
   }
