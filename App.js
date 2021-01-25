@@ -6,6 +6,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import HomeScreen from './screen/HomeScreen';
 import ResultsScreen from './screen/ResultsScreen';
 import {createStackNavigator} from '@react-navigation/stack';
+import {LogBox} from 'react-native';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -18,6 +19,7 @@ const StackScreens = () => (
 );
 
 export default function App() {
+  LogBox.ignoreLogs(['Animated: `useNativeDriver` was not specified.']);
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="DrawerHome">

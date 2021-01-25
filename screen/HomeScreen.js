@@ -8,12 +8,12 @@ import {
   TouchableHighlight,
   TextInput,
 } from 'react-native';
-import DataManager from '../DataManager';
+import DataManager from '../FlickerDataManager';
 import {saveData, readData} from '../Storage';
 import React, {Component} from 'react';
 import {StackActions} from '@react-navigation/native';
-import Snackbar from 'react-native-snackbar';
 import appConstant from '../app-constant';
+import SnackBar from '../snackbar';
 
 class SearchScreen extends Component {
   constructor(props) {
@@ -26,6 +26,13 @@ class SearchScreen extends Component {
       page: 1,
     };
   }
+
+  DisplaySnackBar = () => {
+    this.refs.ReactNativeSnackBar.ShowSnackBarFunction(
+      'YOU ARE OFFLINE',
+      'warning',
+    );
+  };
 
   // Event handlers
   async _onPressSearch() {
@@ -46,17 +53,7 @@ class SearchScreen extends Component {
   }
 
   _handleError(msg, onRetry = () => {}) {
-    Snackbar.show({
-      text: msg,
-      duration: Snackbar.LENGTH_INDEFINITE,
-      action: {
-        text: 'RETRY',
-        textColor: 'green',
-        onPress: () => {
-          onRetry();
-        },
-      },
-    });
+    this.DisplaySnackBar();
   }
 
   // set page and sate
@@ -115,11 +112,7 @@ class SearchScreen extends Component {
   render() {
     const spinner = this.state.isLoading ? (
       <ActivityIndicator size="large" color="red" />
-    ) : (
-      <View>
-        <Text></Text>
-      </View>
-    );
+    ) : null;
     return (
       <View style={styles.root}>
         <View style={styles.topContainer}>
@@ -136,6 +129,7 @@ class SearchScreen extends Component {
             <Text style={styles.buttonText}>GO</Text>
           </TouchableHighlight>
         </View>
+
         <View style={styles.bottomContainer}>
           <View style={styles.listContainer}>
             <Text style={styles.imagesTitle}>Popular Images</Text>
@@ -152,6 +146,7 @@ class SearchScreen extends Component {
                 <ActivityIndicator size={50} color="red" animating />
               )}
             />
+            <SnackBar ref="ReactNativeSnackBar" />
           </View>
         </View>
       </View>
